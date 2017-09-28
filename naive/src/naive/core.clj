@@ -25,9 +25,6 @@
 (defn compute-class-prob [quants]
   (reduce (fn [acc [k v]] (assoc acc k (/ (:sum v) 70))) {} quants))
 
-(def test-animal-cropped [0,0,1,0,0,1,1,1,1,0,0,1,0,1,0,0])
-(def test-animal-full [0,0,1,0,0,1,1,1,1,0,0,1,0,1,0,0, 4])
-
 (defn compute-param-vals-prob [quants]
   (reduce
    (fn [bacc [cls params]]
@@ -69,4 +66,4 @@
         local-predict (partial predict param-vals-prob class-prob quants)
         local-get-class (partial get-class local-predict (keys class-prob))
         local-check (partial check local-get-class)]
-    (float (* 100 (/ (count (filter local-check test-data)) test-count)))))
+    (println (float (* 100 (/ (count (filter local-check test-data)) test-count))))))
