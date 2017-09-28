@@ -4,46 +4,31 @@
             [clojure.core.matrix :as m])
   (:gen-class))
 
-(defn deep-merge [a b]
-  (merge-with (fn [x y]
-                (cond (map? y) (deep-merge x y)
-                      (vector? y) (concat x y)
-                      :else y))
-              a b))
-
 (defn load-data [filename]
   (with-open [reader (io/reader filename)]
     (doall (csv/read-csv reader))))
 
-(defn -main [& args]
-  (let [train-data (as-> (load-data "data_train.csv") $
-                       (m/submatrix $ 0 70 2 17)
-                       (map #(map read-string %) $)
-                       (m/array $))])
-  (println "Hello, World!"))
+(defn sinc [x] (if x (inc x) 1))
 
-(def data (as-> (load-data "data_train.csv") $
-              (m/submatrix $ 0 70 2 17)
-              (map #(map read-string %) $)
-              (m/array $)))
+(defn split-row [row]
+  [(subvec row 0 (dec (count row))) (last row)])
 
-(m/submatrix (load-data "data_train.csv") 0 70 2 17)
-
-(defn sinc [x]
-  "Safe increment"
-  (if x (inc x) 1))
-
-(def quants
+(defn compute-qty [data]
   (reduce (fn [bacc row]
-            (let [cl (last row)
-                  params (subvec row 0 (dec (count row)))]
+            (let [[params cl] (split-row row)]
               (update-in (reduce (fn [sacc [i p]] (update-in sacc [cl i p] sinc)) bacc
                                  (map-indexed (fn [i p] [i p]) params))
                          [cl :sum] sinc))) {} data))
 
-(def class-prob (reduce (fn [acc [k v]] (assoc acc k (/ (:sum v) 70))) {} quants))
+(defn additive-smoothing [class-count a] (+ a (/ 1 class-count))) 
 
-(def params-prob
+(defn compute-class-prob [quants]
+  (reduce (fn [acc [k v]] (assoc acc k (/ (:sum v) 70))) {} quants))
+
+(def test-animal-cropped [0,0,1,0,0,1,1,1,1,0,0,1,0,1,0,0])
+(def test-animal-full [0,0,1,0,0,1,1,1,1,0,0,1,0,1,0,0, 4])
+
+(defn compute-param-vals-prob [quants]
   (reduce
    (fn [bacc [cls params]]
      (let [s (:sum params)]
@@ -52,6 +37,36 @@
                   (fn [macc [p q]] (assoc-in macc [cls param p] (/ q s))) sacc values))
                bacc (dissoc params :sum)))){} quants))
 
-(clojure.pprint/pprint (into (sorted-map) quants) (io/writer "pretty"))
-(clojure.pprint/pprint (into (sorted-map) class-prob) (io/writer "pretty-prob-class"))
-(clojure.pprint/pprint (into (sorted-map) params-prob) (io/writer "pretty-prob-params"))
+(defn predict [params-prob class-prob quants obj cls]
+  (let [vals-probs-cls (params-prob cls)
+        add-smth (partial additive-smoothing (get-in quants [cls :sum]))
+        computed-val-prob
+        (reduce (fn [acc [param values]]
+                  (* acc (add-smth (or (values (nth obj param)) 0)))) 1 vals-probs-cls)]
+    (* (class-prob cls) computed-val-prob)))
+
+(defn get-class [predict-fn classes obj]
+  (second
+   (apply max-key first (map (fn [x] [(predict-fn obj x) x]) classes))))
+
+(defn check [predict-fn row]
+  (let [[params cls] (split-row row)]
+    (= (predict-fn params) cls)))
+
+(defn -main [& args]
+  (let [train-data (as-> (load-data "data_train.csv") $
+                       (m/submatrix $ 0 70 2 17)
+                       (map #(map read-string %) $)
+                       (m/array $))
+        test-data (as-> (load-data "data_test.csv") $
+                        (m/submatrix $ 0 31 2 17)
+                        (map #(map read-string %) $)
+                        (m/array $))
+        test-count (count test-data)
+        quants (compute-qty train-data)
+        class-prob (compute-class-prob quants)
+        param-vals-prob (compute-param-vals-prob quants)
+        local-predict (partial predict param-vals-prob class-prob quants)
+        local-get-class (partial get-class local-predict (keys class-prob))
+        local-check (partial check local-get-class)]
+    (float (* 100 (/ (count (filter local-check test-data)) test-count)))))
