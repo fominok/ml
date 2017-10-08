@@ -10,9 +10,10 @@
                (doall (csv/read-csv reader)))]
     (ds/row-maps (ds/dataset (map keyword (first data)) (rest data)))))
 
-(defn sinc [x] (if x (inc x) 1))
+(defn sinc
+  [x] (if x (inc x) 1))
 
-(def manifest
+#_(def manifest
   {:hair :enum
    :feathers :enum
    :eggs :enum
@@ -31,6 +32,64 @@
    :catsize :enum
    :type :class})
 
+(def manifest
+  {:elevation      :num
+   :aspect         :num
+   :slope          :num
+   :hor_dist_hyd   :num
+   :ver_dist_hyd   :num
+   :hor_dist_road  :num
+   :hillshade_9am  :num
+   :hillshade_noon :num
+   :hillshade_3pm  :num
+   :hor_dist_fire  :num
+   :wild_1         :enum
+   :wild_2         :enum
+   :wild_3         :enum
+   :wild_4         :enum
+   :soil_1         :enum
+   :soil_2         :enum
+   :soil_3         :enum
+   :soil_4         :enum
+   :soil_5         :enum
+   :soil_6         :enum
+   :soil_7         :enum
+   :soil_8         :enum
+   :soil_9         :enum
+   :soil_10        :enum
+   :soil_11        :enum
+   :soil_12        :enum
+   :soil_13        :enum
+   :soil_14        :enum
+   :soil_15        :enum
+   :soil_16        :enum
+   :soil_17        :enum
+   :soil_18        :enum
+   :soil_19        :enum
+   :soil_20        :enum
+   :soil_21        :enum
+   :soil_22        :enum
+   :soil_23        :enum
+   :soil_24        :enum
+   :soil_25        :enum
+   :soil_26        :enum
+   :soil_27        :enum
+   :soil_28        :enum
+   :soil_29        :enum
+   :soil_30        :enum
+   :soil_31        :enum
+   :soil_32        :enum
+   :soil_33        :enum
+   :soil_34        :enum
+   :soil_35        :enum
+   :soil_36        :enum
+   :soil_37        :enum
+   :soil_38        :enum
+   :soil_39        :enum
+   :soil_40        :enum
+   :cov_type       :class
+   })
+
 (defn get-by-val [hm val]
   (first (filter (comp #{val} hm) (keys hm))))
 
@@ -39,16 +98,34 @@
 (defmulti summarize-fn #'dispatch)
 
 (defmethod summarize-fn :enum
-  [attr-type cls acc attr value]
+  [_ cls acc attr value]
   (update-in acc [cls attr value] sinc))
+
+(defmethod summarize-fn :num
+  [_ cls acc attr value]
+  (update-in acc [cls attr :vec] conj value))
 
 (defmulti prob-fn #'dispatch)
 
 (defmethod prob-fn :enum
-  [attr-type cls acc attr values-summary]
+  [_ cls acc attr values-summary]
   (let [sum (reduce + (vals values-summary))
         probs (into (hash-map) (map (fn [[k v]] [k (/ v sum)]) values-summary))]
     (assoc-in acc [cls attr] (fn [x] (get probs x)))))
+
+(defmethod prob-fn :num
+  [_ cls acc attr values-summary]
+  (let [values (get-in values-summary [cls attr :vec])
+        n (count values)
+        sum (reduce + values)
+        mean (/ sum n)
+        stdev-raw (/ (reduce + (map #(Math/pow (- % mean) 2) values)) n)
+        stdev (if (= 0 stdev-raw) (+ stdev-raw 0.000001) stdev-raw)]
+    (assoc-in acc [cls attr]
+              (fn [x]
+                (* (Math/exp (- (/ (Math/pow (- x mean) 2)
+                                   (* 2 (Math/pow stdev 2)))))
+                   (/ 1 (* stdev (Math/sqrt (* 2 Math/PI)))))))))
 
 (defn summarize [manifest dataset]
   (let [class-field (get-by-val manifest :class)]
@@ -90,8 +167,8 @@
     (float (/ (* 100 right-qty) qty))))
 
 (defn -main [& args]
-  (let [train-data (load-data "data_train.csv")
-        test-data (load-data "data_test.csv")
+  (let [train-data (load-data "cov_train.csv")
+        test-data (load-data "cov_test.csv")
         qty (count train-data)
         smooth-fn (partial additive-smoothing qty)
         summarized (summarize manifest train-data)
