@@ -115,7 +115,7 @@
 
 (defmethod prob-fn :num
   [_ cls acc attr values-summary]
-  (let [values (get-in values-summary [cls attr :vec])
+  (let [values (map #(Integer/parseInt %) (:vec values-summary))
         n (count values)
         sum (reduce + values)
         mean (/ sum n)
@@ -123,7 +123,7 @@
         stdev (if (= 0 stdev-raw) (+ stdev-raw 0.000001) stdev-raw)]
     (assoc-in acc [cls attr]
               (fn [x]
-                (* (Math/exp (- (/ (Math/pow (- x mean) 2)
+                (* (Math/exp (- (/ (Math/pow (- (Integer/parseInt x) mean) 2)
                                    (* 2 (Math/pow stdev 2)))))
                    (/ 1 (* stdev (Math/sqrt (* 2 Math/PI)))))))))
 
@@ -159,10 +159,11 @@
              (let [next-prob (* (get probs-class cls) (predict* smooth cls probs-attrs row))]
                (max-key second acc [cls next-prob]))) [nil 0] probs-class)))
 
-(defn test-accuracy [test-ds predict-fn]
-  (let [qty (count test-data)
+(defn test-accuracy [manifest test-ds predict-fn]
+  (let [qty (count test-ds)
+        class-field (get-by-val manifest :class)
         right-qty (reduce (fn [acc row]
-                        (if (= (:type row) (predict-fn row))
+                        (if (= (class-field row) (predict-fn row))
                           (inc acc) acc)) 1 test-ds)]
     (float (/ (* 100 right-qty) qty))))
 
@@ -175,6 +176,6 @@
         attr-probs (calc-probs manifest summarized)
         class-probs (calc-probs-class qty summarized)
         predict-fn (partial predict smooth-fn class-probs attr-probs)]
-    (println (test-accuracy test-data predict-fn))))
+    (println (test-accuracy manifest test-data predict-fn))))
 
-(-main)
+;; > 59.624565
