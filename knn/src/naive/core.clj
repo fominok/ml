@@ -14,7 +14,7 @@
   [x] (if x (inc x) 1))
 
 (def manifest
-  {:cov_type :class
+  {
    :hair :enum
    :feathers :enum
    :eggs :enum
@@ -31,7 +31,7 @@
    :tail :enum
    :domestic :enum
    :catsize :enum
-   :type :enum})
+   :type :class})
 
 (defn get-by-val [hm val]
   (first (filter (comp #{val} hm) (keys hm))))
@@ -41,21 +41,42 @@
 
 (defn dis [x]
   (-> x
-      (dissoc :cov_type)
+      (dissoc :type)
       (dissoc :name)))
-
-(distance (dis (first tr-d)) (dis (second tr-d)))
 
 (def tr-d (load-data "data_train.csv"))
 (def te-d (load-data "data_test.csv"))
 
+(distance (dis (first tr-d)) (dis (nth tr-d 2)))
+
+(defn class-qty [lst]
+  (reduce (fn [acc {:keys [class]}]
+            (update acc class sinc)) {} lst))
+
+(defn max-class [qties]
+  (max-key (fn [[k v]] v) qties))
+
+(defn predict [k training-ds y]
+  (as-> y $
+    (map (fn [row]
+           (let [cls (:type row)]
+             {:class cls
+              :dist (distance (dis row) (dis $))})) training-ds)
+    (->> $
+         (sort-by :dist)
+         (take k)
+         class-qty
+         )))
+
+(predict 15 tr-d (nth te-d 2))
+
 #_(defn -main [& args]
-  (let [train-data (load-data "data_train.csv")
-        test-data (load-data "data_test.csv")
-        qty (count train-data)
-        smooth-fn (partial additive-smoothing qty)
-        summarized (summarize manifest train-data)
-        attr-probs (calc-probs manifest summarized)
-        class-probs (calc-probs-class qty summarized)
-        predict-fn (partial predict smooth-fn class-probs attr-probs)]
-    (println (test-accuracy manifest test-data predict-fn))))
+    (let [train-data (load-data "data_train.csv")
+          test-data (load-data "data_test.csv")
+          qty (count train-data)
+          smooth-fn (partial additive-smoothing qty)
+          summarized (summarize manifest train-data)
+          attr-probs (calc-probs manifest summarized)
+          class-probs (calc-probs-class qty summarized)
+          predict-fn (partial predict smooth-fn class-probs attr-probs)]
+      (println (test-accuracy manifest test-data predict-fn))))
