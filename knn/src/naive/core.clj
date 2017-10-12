@@ -13,14 +13,45 @@
 (defn sinc
   [x] (if x (inc x) 1))
 
-(def manifest {:cov_type :class})
+(def manifest
+  {:cov_type :class
+   :hair :enum
+   :feathers :enum
+   :eggs :enum
+   :milk :enum
+   :airborne :enum
+   :aquatic :enum
+   :predator :enum
+   :toothed :enum
+   :backbone :enum
+   :breathes :enum
+   :venomous :enum
+   :fins :enum
+   :legs :enum
+   :tail :enum
+   :domestic :enum
+   :catsize :enum
+   :type :enum})
 
 (defn get-by-val [hm val]
   (first (filter (comp #{val} hm) (keys hm))))
 
-(defn -main [& args]
-  (let [train-data (load-data "cov_train.csv")
-        test-data (load-data "cov_test.csv")
+(defn distance [x y]
+  (reduce + (map (fn [a b] (Math/pow (- (Integer/parseInt a) (Integer/parseInt b)) 2)) (vals x) (vals y))))
+
+(defn dis [x]
+  (-> x
+      (dissoc :cov_type)
+      (dissoc :name)))
+
+(distance (dis (first tr-d)) (dis (second tr-d)))
+
+(def tr-d (load-data "data_train.csv"))
+(def te-d (load-data "data_test.csv"))
+
+#_(defn -main [& args]
+  (let [train-data (load-data "data_train.csv")
+        test-data (load-data "data_test.csv")
         qty (count train-data)
         smooth-fn (partial additive-smoothing qty)
         summarized (summarize manifest train-data)
@@ -28,5 +59,3 @@
         class-probs (calc-probs-class qty summarized)
         predict-fn (partial predict smooth-fn class-probs attr-probs)]
     (println (test-accuracy manifest test-data predict-fn))))
-
-;; > 59.624565
