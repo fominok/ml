@@ -7,6 +7,6 @@
                  [org.clojure/data.csv "0.1.4"]
                  [proto-repl "0.3.1"]
                  [net.mikera/core.matrix "0.61.0"]]
-  :main ^:skip-aot naive.core
+  :main ^:skip-aot knn.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})
