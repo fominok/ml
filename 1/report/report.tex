@@ -1,0 +1,101 @@
+\documentclass[12pt, a4paper] {article}
+\usepackage[utf8] {inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english, russian] {babel}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{minted,longtable,amsmath,amsfonts,graphicx,tikz,hyperref}
+\usepackage{indentfirst,verbatim}
+
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+
+\setminted{
+  fontsize=\scriptsize,
+  baselinestretch=1.2,
+  linenos,
+  frame=lines
+}
+
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+  {\large
+    Университет ИТМО \\
+    Кафедра Информатики и прикладной математики \\
+  }
+\end{center}
+\vspace{\stretch{2}}
+\begin{center}
+  {\large
+    Машинное обучение\\
+  }
+    \vspace{\stretch{1}}
+  {\large
+    Лабораторная работа 1\\
+    ``Метрические алгоритмы классификации''\\
+  }
+\end{center}
+\vspace{\stretch{6}}
+\begin{flushright}
+  Работу выполнил студент группы P4117\\
+  {\it Фомин Евгений\\
+  }
+\end{flushright}
+\vspace{\stretch{4}}
+\begin{center}
+  2017
+\end{center}
+\newpage
+
+\section{Постановка задачи}
+
+\begin{enumerate}
+  \item Программно реализовать два метрических алгоритма классификации:
+    Naive Bayes и K Nearest Neighbours
+  \item Сравнить работу реализованных алгоритмов с библиотечными из scikit-learn
+  \item Для тренировки, теста и валидации использовать один из предложенных датасетов
+  \item Сформировать краткий отчет
+\end{enumerate}
+
+\section{Исходные данные}
+\subsection{Датасет}
+\begin{description}
+  \item[Источник] \href{https://archive.ics.uci.edu/ml/datasets/Covertype}{https://archive.ics.uci.edu/ml/datasets/Covertype}
+  \item[Предметная область] Тип лесного покрова
+  \item[Задача]Определить, к какому из 7 типов относится лесной покров конкретного участка земли
+  \item[Количество записей] 10000
+  \item[Количество атрибутов] 54
+\end{description}
+\subsection{Атрибуты}
+\begin{description}
+  \item[Elevation] Высота (число)
+  \item[Aspect] Сторона (число)
+  \item[Slope] Угол склона (число)
+  \item[Horizontal distance to hydrology] Горизонтальная составляющая вектора направления к ближайшему водоему (число)
+  \item[Vertical distance to hydrology] Вертикальная составляющая вектора направления к ближайшему водоему (число)
+  \item[Hillshade 9 am] Hillshade 9 am (число)
+  \item[Hillshade Noon] Hillshade Noon (число)
+  \item[Hillshade 3 pm] Hillshade 3 pm (число)
+  \item[Horizontal distance to fire points] Дистанция до ближайших точек лесных пожаров (число)
+  \item[Wilderness Area] Дикость (4 бинарных поля)
+  \item[Soil type] Типы почвы (40 бинарных полей)
+\end{description}
+
+\section{Ход работы}
+\subsection{Naive Bayes}
+\inputminted{clojure}{bayes.clj}
+\subsection{KNN}
+\inputminted{clojure}{knn.clj}
+\subsection{Сравнение с библиотечными функциями}
+\inputminted{python}{listing.py}
+
+Основным отличием в реализациях наивного байесовского классификатора, полученной в ходе
+выполнения лабораторной работы, и библиотечной является различие атрибутов количественных и
+качественных: для первых вероятность считается по закону распределения Гаусса, а для вторых
+как дискретное распределение со сглаживанием Лапласа. В результате это позволило повысить точность.
+
+\end{document}

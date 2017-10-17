@@ -15,9 +15,9 @@ ds_test_attrs, ds_test_class = prepare_ds('cov_test_r.csv')
 clf_a = GaussianNB()
 clf_a.fit(ds_train_attrs, ds_train_class)
 print(clf_a.score(ds_test_attrs, ds_test_class))
-# >> 46.3487829276
+# >> 46.3487829276 (против 61.287094)
 
 clf_b = KNeighborsClassifier()
 clf_b.fit(ds_train_attrs, ds_train_class)
 print(clf_b.score(ds_test_attrs, ds_test_class))
-# >> 69.9233077693
+# >> 69.9233077693 (против 69.72324)
