@@ -1,0 +1,101 @@
+\documentclass[12pt, a4paper] {article}
+\usepackage[utf8] {inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english, russian] {babel}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{minted,longtable,amsmath,amsfonts,graphicx,tikz,hyperref}
+\usepackage{indentfirst,verbatim}
+
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+
+\setminted{
+  fontsize=\scriptsize,
+  baselinestretch=1.2,
+  linenos,
+  frame=lines
+}
+
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+  {\large
+    Университет ИТМО \\
+    Кафедра Информатики и прикладной математики \\
+  }
+\end{center}
+\vspace{\stretch{2}}
+\begin{center}
+  {\large
+    Машинное обучение\\
+  }
+    \vspace{\stretch{1}}
+  {\large
+    Лабораторная работа 2\\
+    ``Деревья решений''\\
+  }
+\end{center}
+\vspace{\stretch{6}}
+\begin{flushright}
+  Работу выполнил студент группы P4117\\
+  {\it Фомин Евгений\\
+  }
+\end{flushright}
+\vspace{\stretch{4}}
+\begin{center}
+  2017
+\end{center}
+\newpage
+
+\section{Постановка задачи}
+
+\begin{enumerate}
+  \item Прочитать теоретическую часть по деревьям решений
+  \item Описать структуру данных для своего набора
+  \item Провести серию экспериментов с построением
+    и тестированием деревьев решений (используя DecisionTreeClassifier и RandomForestClassifier),
+    переразбивая исходное множество данных, заданное в варианте, отводя под обучение
+    от 60 процентов датасета до 90 с шагом в 10 процентов
+  \item Осуществить классификацию
+  \item Сформулировать вывод по использованию деревьев решений для исходной задачи
+\end{enumerate}
+
+\section{Исходные данные}
+\subsection{Датасет}
+\begin{description}
+  \item[Источник] \href{https://archive.ics.uci.edu/ml/datasets/Covertype}{https://archive.ics.uci.edu/ml/datasets/Covertype}
+  \item[Предметная область] Тип лесного покрова
+  \item[Задача]Определить, к какому из 7 типов относится лесной покров конкретного участка земли
+  \item[Количество записей] 10000
+  \item[Количество атрибутов] 54
+\end{description}
+\subsection{Атрибуты}
+\begin{description}
+  \item[Elevation] Высота (число)
+  \item[Aspect] Сторона (число)
+  \item[Slope] Угол склона (число)
+  \item[Horizontal distance to hydrology] Горизонтальная составляющая вектора направления к ближайшему водоему (число)
+  \item[Vertical distance to hydrology] Вертикальная составляющая вектора направления к ближайшему водоему (число)
+  \item[Hillshade 9 am] Hillshade 9 am (число)
+  \item[Hillshade Noon] Hillshade Noon (число)
+  \item[Hillshade 3 pm] Hillshade 3 pm (число)
+  \item[Horizontal distance to fire points] Дистанция до ближайших точек лесных пожаров (число)
+  \item[Wilderness Area] Дикость (4 бинарных поля)
+  \item[Soil type] Типы почвы (40 бинарных полей)
+\end{description}
+
+\section{Ход работы}
+\inputminted{python}{listing.py}
+
+\section{Вывод}
+
+Для классификации данного датасета деревья решений показывают лучший результат, нежели
+метрические алгоритмы. По отношению друг к другу, Random Forest, как наследник алгоритма
+CART, дает лучший показатель точности. Увеличение обучающей выборки в данном случае
+сказывается положительно для обоих алгоритмов, переобучения не наблюдается.
+
+\end{document}
