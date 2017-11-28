@@ -1,0 +1,7 @@
+*~
+__pycache__
+_minted-report
+*.aux
+*.log
+*.out
+*.pdf
