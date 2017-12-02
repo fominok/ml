@@ -8,7 +8,7 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = '/tmp/upload'
 CORS(app)
 
-is_loaded = False
+results = None
 
 @app.route("/")
 def hello():
@@ -16,7 +16,7 @@ def hello():
 
 @app.route('/loaded')
 def loaded():
-    return jsonify({"loaded": is_loaded})
+    return jsonify({"results": results})
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
@@ -31,10 +31,10 @@ def upload_file():
         if file.filename == '':
             flash('No selected file')
             return redirect(request.url)
+        class_field = request.form['class_field']
         filename = secure_filename(file.filename)
         path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(path)
-        global is_loaded
-        is_loaded = True
-        results = ml.main(path)
+        global results
+        results = ml.main(path, class_field)
         return jsonify({"results": results})

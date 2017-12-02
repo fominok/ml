@@ -11,7 +11,9 @@
   :dependencies [[org.clojure/clojure "1.9.0-beta4"]
                  [org.clojure/clojurescript "1.9.946"]
                  [org.clojure/core.async  "0.3.443"]
+                 [garden "1.3.3"]
                  [cljs-ajax "0.7.3"]
+                 [cljsjs/d3 "4.12.0-0"]
                  [reagent "0.7.0"]]
 
   :plugins [[lein-figwheel "0.5.14"]
